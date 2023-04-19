@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Header from './Header.js'
 import Main from './Main.js'
 import Footer from './Footer.js'
@@ -7,7 +8,12 @@ import EditProfilePopup from "./EditProfilePopup";
 import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
 import PopupWithConfirm from "./PopupWithConfirm";
+import Login from './Login.jsx'
+import Register from './Register.jsx'
+import { ProtectedRouteElement } from './ProtectedRoute.jsx'
+import InfoTooltip from './InfoTooltip.jsx'
 import api from "../utils/api.js";
+import auth from "../utils/auth.js";
 import CurrentUserContext from "../contexts/CurrentUserContext";
 
 
@@ -21,6 +27,14 @@ function App() {
   const [cards, setCards] = useState([]);
   const [cardForDelete, setCardForDelete] = useState({});
 
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [email, setEmail] = useState('');
+
+  const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
+  const [isRegisterSuccess, setIsRegisterSuccess] = useState(false);
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     Promise.all([api.getUserData(), api.getInitialCards()])
       .then(([userData, initialCards]) => {
@@ -29,6 +43,68 @@ function App() {
       })
       .catch(err => console.log(err));
   }, []);
+
+  // const tokenCheck = () => {
+
+  // }
+
+  useEffect(() => {
+
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      auth
+        .checkToken({ token })
+        .then((res) => {
+          if (res) {
+            // console.log(res);
+            setLoggedIn(true);
+            setEmail(res.data.email);
+            navigate("/mesto", { replace: true });
+          }
+        })
+        .catch(err => console.log(err));
+    }
+
+  }, [loggedIn, navigate])
+
+  function handleRegister({ email, password }) {
+    auth
+      .signUp({ email, password })
+      .then(() => {
+        navigate("/signin", { replace: true });
+        setIsInfoTooltipOpen(true);
+        setIsRegisterSuccess(true);
+      })
+      .catch((err) => {
+        console.log(err);
+        setIsInfoTooltipOpen(true);
+        setIsRegisterSuccess(false);
+      });
+  }
+
+  function handleLogin({ email, password }) {
+    auth
+      .signIn({ email, password })
+      .then(res => {
+        // console.log(res);
+        localStorage.setItem('token', res.token);
+        setEmail(email);
+        setLoggedIn(true);
+        navigate('/mesto', { replace: true })
+      })
+      .catch((err) => {
+        console.log(err);
+        setIsInfoTooltipOpen(true);
+        setIsRegisterSuccess(false);
+      }
+      )
+  }
+
+  function signOut() {
+    localStorage.removeItem('token');
+    setLoggedIn(false);
+  }
 
   function handleCardLike(card) {
     // Снова проверяем, есть ли уже лайк на этой карточке
@@ -83,7 +159,7 @@ function App() {
       .catch(err => console.log(err))
   }
 
-  function handleUpdateAvatar({avatar}) {
+  function handleUpdateAvatar({ avatar }) {
     api
       .changeAvatar(avatar)
       .then((data) => {
@@ -108,12 +184,11 @@ function App() {
   function handleCardClick(card) {
     setSelectedCard(card);
   }
-  
+
   function handleDeleteCardClick(card) {
     setIsDeleteCardPopupOpen(true);
     setCardForDelete(card);
   }
-
 
   function closeAllPopups() {
     setIsEditAvatarPopupOpen(false);
@@ -121,20 +196,62 @@ function App() {
     setIsAddPlacePopupOpen(false);
     setIsDeleteCardPopupOpen(false);
     setSelectedCard({});
+    setIsInfoTooltipOpen(false);
   }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="page">
-        <Header />
-        <Main
-          onEditProfile={handleEditProfileClick}
-          onAddPlace={handleAddPlaceClick}
-          onEditAvatar={handleEditAvatarClick}
-          onCardClick={handleCardClick}
-          cards={cards}
-          onCardLike={handleCardLike}
-          onCardDelete={handleDeleteCardClick} />
+        <Header
+          signOut={signOut}
+          email={email}
+        />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              loggedIn ? (
+                <Navigate to="/mesto" replace />
+              ) : (
+                <Navigate to="/signup" replace />
+              )
+            }
+          />
+          <Route
+            path="/mesto"
+            element={
+              <ProtectedRouteElement
+                element={Main}
+                loggedIn={loggedIn}
+                onEditProfile={handleEditProfileClick}
+                onAddPlace={handleAddPlaceClick}
+                onEditAvatar={handleEditAvatarClick}
+                onCardClick={handleCardClick}
+                cards={cards}
+                onCardLike={handleCardLike}
+                onCardDelete={handleDeleteCardClick}
+              />
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <Register
+                handleRegister={handleRegister}
+              />
+            }
+          />
+          <Route
+            path="/signin"
+            element={
+              <Login
+                handleLogin={handleLogin}
+              />
+            }
+          />
+
+        </Routes>
+
         <Footer />
 
         <EditProfilePopup
@@ -158,15 +275,21 @@ function App() {
         />
 
         <PopupWithConfirm
-           card={cardForDelete}
-           onCardDelete={handleCardDelete}
-           isOpen={isDeleteCardPopupOpen}
-           onClose={closeAllPopups}
-        /> 
-
+          card={cardForDelete}
+          onCardDelete={handleCardDelete}
+          isOpen={isDeleteCardPopupOpen}
+          onClose={closeAllPopups}
+        />
+        <InfoTooltip
+          isOpen={isInfoTooltipOpen}
+          onClose={closeAllPopups}
+          isSuccess={isRegisterSuccess}
+        />
       </div>
     </CurrentUserContext.Provider>
   )
 }
 
 export default App;
+
+
