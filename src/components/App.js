@@ -29,27 +29,28 @@ function App() {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [email, setEmail] = useState('');
+  const [errorText, setErrorText] = useState("");
 
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
   const [isRegisterSuccess, setIsRegisterSuccess] = useState(false);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    Promise.all([api.getUserData(), api.getInitialCards()])
-      .then(([userData, initialCards]) => {
-        setCurrentUser(userData);
-        setCards(initialCards);
-      })
-      .catch(err => console.log(err));
-  }, []);
-
-  // const tokenCheck = () => {
-
-  // }
 
   useEffect(() => {
+    if (loggedIn) {
+      Promise.all([api.getUserData(), api.getInitialCards()])
+        .then(([userData, initialCards]) => {
+          setCurrentUser(userData);
+          setCards(initialCards);
+        })
+        .catch(err => console.log(err));
+    }
+  }, [loggedIn]);
 
+
+  useEffect(() => {
+    
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -75,11 +76,13 @@ function App() {
         navigate("/signin", { replace: true });
         setIsInfoTooltipOpen(true);
         setIsRegisterSuccess(true);
+        signIn("Вы успешно зарегистрировались!");
       })
       .catch((err) => {
         console.log(err);
         setIsInfoTooltipOpen(true);
         setIsRegisterSuccess(false);
+        signIn("Что-то пошло не так! Попробуйте еще раз.");
       });
   }
 
@@ -97,13 +100,20 @@ function App() {
         console.log(err);
         setIsInfoTooltipOpen(true);
         setIsRegisterSuccess(false);
+        signIn("Что-то пошло не так! Попробуйте еще раз.");
       }
       )
+  }
+
+  function signIn(text) {
+    setErrorText(text);
+    setIsInfoTooltipOpen(true);
   }
 
   function signOut() {
     localStorage.removeItem('token');
     setLoggedIn(false);
+    // setErrorText("");
   }
 
   function handleCardLike(card) {
@@ -284,6 +294,9 @@ function App() {
           isOpen={isInfoTooltipOpen}
           onClose={closeAllPopups}
           isSuccess={isRegisterSuccess}
+          // infoTextSuccess="Вы успешно зарегистрировались!"
+          // infoTextError="Что-то пошло не так! Попробуйте ещё раз."
+          errorText={errorText}
         />
       </div>
     </CurrentUserContext.Provider>

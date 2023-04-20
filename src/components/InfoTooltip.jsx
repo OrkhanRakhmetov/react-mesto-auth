@@ -2,19 +2,41 @@ import React from "react";
 import InfoTooltipSuccess from "../images/svg/InfoTooltipSuccess.svg";
 import InfoTooltipError from "../images/svg/InfoTooltipError.svg";
 
-function InfoTooltip({ isOpen, onClose, isSuccess }) {
+function InfoTooltip({ isOpen, onClose, isSuccess, infoTextSuccess, infoTextError ,errorText}) {
+  React.useEffect(() => {
+    function handleEscClose(e) {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    if (isOpen) {
+      window.addEventListener("keydown", handleEscClose);
+      return () => window.removeEventListener("keydown", handleEscClose)
+    }
+
+  }, [onClose, isOpen])
+
   return (
 
     <section className={`popup ${isOpen ? "popup_active" : ""}`} >
       <div className="popup__container">
         <div className="popup__success">
 
-          {isSuccess ?
+          {/* {isSuccess ?
             (<img className="popup__success-image" src={InfoTooltipSuccess} alt="Success" />) :
-            (<img className="popup__success-image" src={InfoTooltipError} alt="Error" />)}
+            (<img className="popup__success-image" src={InfoTooltipError} alt="Error" />)} */}
+
+          <img
+            className="popup__success-image"
+            src={isSuccess ? InfoTooltipSuccess : InfoTooltipError}
+            alt={isSuccess ? 'Success' : 'Error'}
+          />{/* {isSuccess ? "Вы успешно зарегистрировались!" : "Что-то пошло не так! Попробуйте ещё раз."} */}
 
           <span className="popup__success-text">
-            {isSuccess ? "Вы успешно зарегистрировались!" : "Что-то пошло не так! Попробуйте ещё раз."}
+            
+            {/* {isSuccess ?  infoTextSuccess  :  infoTextError } */}
+            {errorText}
+
           </span>
 
         </div>

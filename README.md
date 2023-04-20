@@ -15,7 +15,7 @@
 - адаптивная верстка (Grid Layout, Flexbox, media queries)
 
 ## GitHub Pages
-<a href="https://orkhanrakhmetov.github.io/mesto-react/">Страница проекта</a>
+<a href="https://orkhanrakhmetov.github.io/react-mesto-auth/">Страница проекта</a>
 
 ## Ссылка на макет (Figma)
 <a href="https://www.figma.com/file/kRVLKwYG3d1HGLvh7JFWRT/JavaScript.-Sprint-6?node-id=0%3A1">Дизайн проект (Figma)</a>

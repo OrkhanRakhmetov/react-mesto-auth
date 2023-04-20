@@ -1,6 +1,7 @@
 import React from "react";
 
 function ImagePopup({ card, onClose }) {
+
   return (
     <section className={`popup popup_img_enlarge ${card.link ? 'popup_active' : ''}`} id="popupBigImg">
       <div className="popup__enlarge-container">
