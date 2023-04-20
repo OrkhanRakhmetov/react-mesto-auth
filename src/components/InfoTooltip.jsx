@@ -3,6 +3,7 @@ import InfoTooltipSuccess from "../images/svg/InfoTooltipSuccess.svg";
 import InfoTooltipError from "../images/svg/InfoTooltipError.svg";
 
 function InfoTooltip({ isOpen, onClose, isSuccess, infoTextSuccess, infoTextError ,errorText}) {
+
   React.useEffect(() => {
     function handleEscClose(e) {
       if (e.key === 'Escape') {
@@ -16,9 +17,18 @@ function InfoTooltip({ isOpen, onClose, isSuccess, infoTextSuccess, infoTextErro
 
   }, [onClose, isOpen])
 
+  function closePopupByClickOnOverlay(e) {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }
+
   return (
 
-    <section className={`popup ${isOpen ? "popup_active" : ""}`} >
+    <section
+    className={`popup ${isOpen ? "popup_active" : ""}`}
+    onMouseDown={closePopupByClickOnOverlay}
+    >
       <div className="popup__container">
         <div className="popup__success">
 
