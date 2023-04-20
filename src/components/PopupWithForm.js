@@ -5,9 +5,11 @@ function PopupWithForm({ name, title, isOpen, onClose, children, buttonText, onS
   React.useEffect(() => {
     function handleEscClose(e) {
       if (e.key === 'Escape') {
+        console.log(e.target)
         onClose()
       }
     }
+
     if (isOpen) {
       window.addEventListener("keydown", handleEscClose);
       return () => window.removeEventListener("keydown", handleEscClose)
@@ -15,8 +17,20 @@ function PopupWithForm({ name, title, isOpen, onClose, children, buttonText, onS
 
   }, [onClose, isOpen])
 
+  function closePopupByClickOnOverlay(e) {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }
+
+
+
   return (
-    <section className={`popup ${isOpen ? "popup_active" : ""}`} id={name}>
+    <section
+      className={`popup ${isOpen ? "popup_active" : ""}`}
+      id={name}
+      onMouseDown={closePopupByClickOnOverlay}
+    >
       <div className="popup__container">
         <h2 className="popup__title">{title}</h2>
         <form
