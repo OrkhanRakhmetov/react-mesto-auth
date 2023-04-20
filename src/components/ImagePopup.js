@@ -1,6 +1,6 @@
 import React from "react";
 
-function ImagePopup({ card, onClose, isOpen }) {
+function ImagePopup({ card, onClose }) {
 
   React.useEffect(() => {
     function handleEscClose(e) {
